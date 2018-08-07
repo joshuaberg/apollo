@@ -1,6 +1,6 @@
 {
   "config":{
-    "access_token": "Enter GroupMe Access Token", 
-    "group_id": "Enter Group ID Here",
+    "access_token": "GroupMe Access Token",
+    "group_id": "Group ID"
   }
 }
