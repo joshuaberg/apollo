@@ -22,16 +22,15 @@ def main():
             try:
                 trainInterpreter(message)
             except Exception:
-                sendMessage('Hmmm it seems like you entered something incorrectly.  Try typing "apollo man"')
+                sendMessage('Hmmm it seems like you entered something incorrectly.  Try typing "man"')
 
-        elif message[0] == 'stations' or message[0] == 'station' or message[0] == 'stationz'
+        elif message[0] == 'stations' or message[0] == 'station' or message[0] == 'stationz':
             print('New Bern  -  East West  -  Bland  -  Carson  -  Stonewall  -  3rd Street  -  ctc')
-        #if str.lower(message) == 'apollo':
-        #    next3Trains = getNext3Trains()
-        #    schedule_1 = selectScheduleTime(next3Trains,0)
-        #    schedule_2 = selectScheduleTime(next3Trains,1)
-        #    schedule_3 = selectScheduleTime(next3Trains,2)
-        #    sendMessage(config[2],'General Kenobi')
+            sendMessage('New Bern  -  East West  -  Bland  -  Carson  -  Stonewall  -  3rd Street  -  CTC')
+
+        if message[0] == 'man':
+            print("https://raw.githubusercontent.com/joshuaberg/apollo/master/README.md")
+            sendMessage("https://raw.githubusercontent.com/joshuaberg/apollo/master/README.md")
 
         time.sleep(5)
 
