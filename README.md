@@ -10,6 +10,6 @@ Apollo is a GroupMe bot that provides info for the Charlotte Lynx light rail.
 
 
     Stations:  
-                  Purpose:  Get a list of stations that work with the bots
+                  Purpose:  Get a list of stations that work with the bot (South to North)
            Message Format:  stations
           Message Example:  "stations"

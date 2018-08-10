@@ -19,10 +19,13 @@ def main():
         message = message.lower().split()
 
         if message[0] == 'train' or message[0] == 'trains' or message[0] == 'trainz':
-            trainInterpreter(message)
+            try:
+                trainInterpreter(message)
+            except Exception:
+                sendMessage('Hmmm it seems like you entered something incorrectly.  Try typing "apollo man"')
 
-
-
+        elif message[0] == 'stations' or message[0] == 'station' or message[0] == 'stationz'
+            print('New Bern  -  East West  -  Bland  -  Carson  -  Stonewall  -  3rd Street  -  ctc')
         #if str.lower(message) == 'apollo':
         #    next3Trains = getNext3Trains()
         #    schedule_1 = selectScheduleTime(next3Trains,0)
@@ -36,20 +39,26 @@ def main():
 
 def trainInterpreter(message):
 
+    #Shortcup for NewBern North
+    if message[1] == 'home':
+        #nextTrains = getTrains('station-19','inbound')
+        getTrains('station-8','inbound')
+        return
+
+    #Parse Station Names Here
+    #stationName = ''.join(message[1:-1])
+    #print (stationName)
+
     #Select a Direction
     if message[-1] == 'north':
         direction = 'inbound'
+        station = stationsInbound[''.join(message[1:-1])]
+
     elif message[-1] == 'south':
         direction = 'outbound'
+        station = stationsOutbound[''.join(message[1:-1])]
 
-
-    #Shortcup for NewBern North
-    if message[1] == 'home':
-        nextTrains = getTrains('station-19','inbound')
-
-    #Parse Station Names Here
-
-    #run getTrains with direction and parsed station name
+    getTrains(station,direction)
 
 
 def getTrains(station,direction):
@@ -105,55 +114,6 @@ def getTrains(station,direction):
     sendMessage(    schedule_1 + '  -  ' + schedule_2 + '  -  ' + schedule_3  )
 
 
-
-################################################################################################################################
-
-def getNext3Trains():
-    #get current time in minutes + current day of the week
-    now = datetime.datetime.now()
-    h = now.hour
-    m = now.minute
-    time_min = (h*60) + m
-    day = datetime.date.today().weekday()  # 0 is monday   6 is sunday
-
-
-    #get full train schedule
-    req = requests.get('https://raw.githubusercontent.com/brandonfancher/charlotte-lightrail/master/src/helpers/schedules.json')
-    parsed_json = req.json()
-
-    # get the current weekday's full schedule
-    if day == 5:
-        full_schedule = parsed_json['outboundSaturday']['station-19']
-    elif day == 6:
-        full_schedule = parsed_json['outboundSunday']['station-19']
-    else:
-        full_schedule = parsed_json['outboundWeekday']['station-19']
-
-
-    #go through schedule and get next 3 trains
-    next3Trains = []
-    k = 0
-    for arrival in full_schedule:
-        #check if thutese value is an actual number, convert it to # if so
-        if arrival != 'no stop':
-            sch_min = (int(arrival[:2])*60) + int(arrival[-2:]) #converts arival time to min
-            #check if ntime is larger then the current time, if so get difference in times
-            if sch_min > time_min:
-                time_until_train = sch_min - time_min
-                #build an array next three values
-                if time_until_train > 60:
-                    hr = math.floor(time_until_train/60)
-                    min = time_until_train - (hr * 60)
-                    next3Trains.append("{} hr {} min".format(hr,min))
-                else:
-                    next3Trains.append("{} min".format(time_until_train))
-
-                k = k + 1
-                if k == 3:
-                    break
-    print(next3Trains)
-    return(next3Trains)
-
 #############################################################################################################################
 def selectScheduleTime(array,num):
     try:
@@ -199,6 +159,27 @@ def checkConfig():
     group_id = parsed_json['config']['group_id']
     bot_id = parsed_json['config']['bot_id']
     return([token,group_id,bot_id])
+
+##########################################################################################################################
+
+
+stationsInbound = {}
+stationsInbound["newbern"] = 'station-8'
+stationsInbound["eastwest"] = 'station-9'
+stationsInbound["bland"] = 'station-10'
+stationsInbound['carson'] = 'station-11'
+stationsInbound['stonewall'] = 'station-12'
+stationsInbound['3rdstreet'] = 'station-13'
+stationsInbound['ctc'] = 'station-14'
+
+stationsOutbound = {}
+stationsOutbound["newbern"] = 'station-19'
+stationsOutbound["eastwest"] = 'station-18'
+stationsOutbound["bland"] = 'station-17'
+stationsOutbound['carson'] = 'station-16'
+stationsOutbound['stonewall'] = 'station-15'
+stationsOutbound['3rdstreet'] = 'station-14'
+stationsOutbound['ctc'] = 'station-13'
 
 ##############################################################################################################################
 if __name__ == '__main__':
