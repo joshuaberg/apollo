@@ -1,7 +1,3 @@
 {
-  "config":{
-    "access_token": "GroupMe Access Token",
-    "group_id": "Group ID",
-    "bot_id": "Bot ID"
-  }
+    "BOT_ID": "bot ID goes here",
 }
