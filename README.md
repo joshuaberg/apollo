@@ -1,15 +1,10 @@
 # apollo
-Apollo is a GroupMe bot that provides info for the Charlotte Lynx light rail.
+Apollo is a GroupMe bot that provides info for the Charlotte Lynx light rail.  Shout out to mattmolo for his groupme bot framework (https://github.com/mattmolo/groupme-bot)
 
 ##### Key Phrases:
 
-    Trains:
+    /trains:
                    Purpose:   Get the next 3 trains for a specified station and direction
-            Message Format:   trains <station name> <direction>
-           Message Example:   "trains east west south"  
-
-
-    Stations:  
-                  Purpose:  Get a list of stations that work with the bot (South to North)
-           Message Format:  stations
-          Message Example:  "stations"
+            Message Format:   /trains <station name> <direction>  :  next 3 train times
+                              /trains stations  : lists supported station
+           Message Example:   "trains east west south"

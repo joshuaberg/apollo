@@ -1,66 +1,125 @@
-import requests
-import os
 import json
 import time
+import random
 import datetime
+import sys
+import os
 
-global old_id
-global bot_id
-old_id = 1
+from groupmebot import GroupMeBot
 
-def main():
-    global bot_id
-    config = checkConfig()
-    bot_id = config[2]
 
-    while True:
-        message = getMessage(config[0],config[1])
-        print(message.lower())
-        message = message.lower().split()
+# Loads config file, which contains the BOT_ID
+with open('config.json', 'r') as f:
+    print('ok')
+    config = json.load(f)
 
-        if message[0] == 'train' or message[0] == 'trains' or message[0] == 'trainz':
-            try:
-                trainInterpreter(message)
-            except Exception:
-                sendMessage('Hmmm it seems like you entered something incorrectly.  Try typing "man"')
+bot = GroupMeBot(config['BOT_ID'])
 
-        elif message[0] == 'stations' or message[0] == 'station' or message[0] == 'stationz':
-            print('New Bern  -  East West  -  Bland  -  Carson  -  Stonewall  -  3rd Street  -  ctc')
-            sendMessage('New Bern  -  East West  -  Bland  -  Carson  -  Stonewall  -  3rd Street  -  CTC')
+# A couple commands use random, so set a seed here
+random.seed(time.time())
 
-        if message[0] == 'man':
-            print("https://raw.githubusercontent.com/joshuaberg/apollo/master/README.md")
-            sendMessage("https://raw.githubusercontent.com/joshuaberg/apollo/master/README.md")
 
-        time.sleep(5)
 
-#########################################################################################################################
+"""
+Train Command
+    /trains <station> <direction>
+"""
 
-def trainInterpreter(message):
+@bot.command("/trains")
+def trains(args):
+    """
+    Get the next three train times for the desired
+    direction and destination
+    """
+    if args[0] == "stations":
+        response_text = "newbern - eastwest - bland - carson - stonewall - 3rdstreet - ctc"
+        bot.post(response_text)
+
+    else:
+        try:
+            trainParameters = trainInterpreter(args)
+            times = getTrains(trainParameters[0],trainParameters[1])
+            response_text = times[0] + '  -  ' + times[1] + '  -  ' + times[2]
+            bot.post(response_text)
+        except Exception:
+            pass
+
+
+
+
+"""
+Roll command:
+    /roll <number> - Roll a dice. Defaults to 6-sided
+"""
+@bot.command("/roll")
+def roll(args):
+    """
+    Roll a dice, inspired by Google Hangouts. Optional argument to specify how
+    many sides.
+    """
+
+    dice = 6
+
+    # Attempt to parse if any arguments
+    if args:
+        try:
+            dice = int(args[0])
+        except Exception:
+            dice = 6
+
+    response_text = "You rolled a %d" % random.randint(1, dice)
+    bot.post(response_text)
+
+
+"""
+Help Command:
+    /help - Show this help thing
+"""
+@bot.command("/help")
+def help(args):
+    """
+    Responds with a list of commands
+    """
+
+    # List of commands. Joined by a newline and then posted
+    commands = [
+        "/trains <station> <direction> - get train times",
+        "/trains stations - get a list of supported directions",
+        "/roll <number> - Roll a dice. Defaults to 6-sided",
+        "/help - Show this help thing"
+    ]
+    bot.post("Here are the available commands:\n" + "\n".join(commands))
+
+
+
+
+def trainInterpreter(args):
+    """
+    interprets arguments of the trains command
+    to get station and direction
+    """
 
     #Shortcup for NewBern North
-    if message[1] == 'home':
-        #nextTrains = getTrains('station-19','inbound')
-        getTrains('station-8','inbound')
-        return
-
-    #Parse Station Names Here
-    #stationName = ''.join(message[1:-1])
-    #print (stationName)
+    if args[0] == 'home':
+        direction = 'inbound'
+        station = 'station-8'
 
     #Select a Direction
-    if message[-1] == 'north':
+    if args[-1] == 'north':
         direction = 'inbound'
-        station = stationsInbound[''.join(message[1:-1])]
-
-    elif message[-1] == 'south':
+        station = stationsInbound[''.join(args[0:-1])]
+    elif args[-1] == 'south':
         direction = 'outbound'
-        station = stationsOutbound[''.join(message[1:-1])]
+        station = stationsOutbound[''.join(args[0:-1])]
 
-    getTrains(station,direction)
+    return([station,direction])
+
 
 
 def getTrains(station,direction):
+    """
+    returns next 3 train times given station and direction
+    """
     #get current time in minutes + current day of the week
     now = datetime.datetime.now()
     h = now.hour
@@ -104,67 +163,31 @@ def getTrains(station,direction):
                 k = k + 1
                 if k == 3:
                     break
-    print(next3Trains)
 
     schedule_1 = selectScheduleTime(next3Trains,0)
     schedule_2 = selectScheduleTime(next3Trains,1)
     schedule_3 = selectScheduleTime(next3Trains,2)
 
-    sendMessage(    schedule_1 + '  -  ' + schedule_2 + '  -  ' + schedule_3  )
+    return([schedule_1,schedule_2,schedule_3])
 
 
-#############################################################################################################################
 def selectScheduleTime(array,num):
+    """
+    returns train time if available
+    returns none if not
+    """
+
     try:
         return(array[num])
     except:
         return('none')
 
-#############################################################################################################################
-
-#Check GroupMe for a New Message
-def getMessage(token, groupID):
-    global old_id
-    base_url = 'https://api.groupme.com/v3/groups/' + groupID + '/messages'
-    payload = {'token' : token }
-    req = requests.get(base_url, params = payload)
-    parsed_json = req.json()
-
-    message_id = parsed_json['response']['messages'][0]['id'] #check the message Id
-
-    #if the message is new (IE, not equal to the old message id, get the message and return it)
-    if message_id != old_id:
-        message = parsed_json['response']['messages'][0]['text']
-        old_id = message_id
-        return(message)
-    else:
-        return "None"
-
-###########################################################################################################################
-def sendMessage(message):
-    global bot_id
-    payload = { 'bot_id' : bot_id , 'text': message }
-    requests.post('https://api.groupme.com/v3/bots/post', params = payload)
-
-
-#############################################################################################################################
-#check the config file for the GroupMe token and group ID
-def checkConfig():
-    config_path = os.path.abspath('config.json')
-    with open(config_path) as f:
-        parsed_json = json.load(f)
-
-    token = parsed_json['config']['access_token']
-    group_id = parsed_json['config']['group_id']
-    bot_id = parsed_json['config']['bot_id']
-    return([token,group_id,bot_id])
-
-##########################################################################################################################
 
 
 stationsInbound = {}
 stationsInbound["newbern"] = 'station-8'
 stationsInbound["eastwest"] = 'station-9'
+stationsInbound["east/west"] = 'station-9'
 stationsInbound["bland"] = 'station-10'
 stationsInbound['carson'] = 'station-11'
 stationsInbound['stonewall'] = 'station-12'
@@ -180,6 +203,10 @@ stationsOutbound['stonewall'] = 'station-15'
 stationsOutbound['3rdstreet'] = 'station-14'
 stationsOutbound['ctc'] = 'station-13'
 
-##############################################################################################################################
-if __name__ == '__main__':
-    main()
+
+
+
+
+if __name__ == "__main__":
+    # Serve forever
+    bot.serve(debug=True, port=4000, threaded=True)
